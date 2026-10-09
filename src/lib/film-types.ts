@@ -65,6 +65,8 @@ export type NearbySpot = {
   distanceKm: number;
   films: string[];
   credits?: string;
+  /** Every title on record, as "Title (year)". */
+  filmCredits?: string[];
   scene?: string;
   page: string;
   image?: string;

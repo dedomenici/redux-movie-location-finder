@@ -18,6 +18,9 @@ function Dots() {
   );
 }
 
+// Titles shown on a near-you card before its "More" button.
+const FILMS_SHOWN = 4;
+
 function milesAway(km: number) {
   const miles = km * 0.621371;
   if (miles < 0.1) return "right here";
@@ -28,6 +31,7 @@ function milesAway(km: number) {
 function NearPage() {
   const [status, setStatus] = useState<"idle" | "locating" | "loading" | "ready">("idle");
   const [error, setError] = useState("");
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const [you, setYou] = useState<{ lat: number; lng: number; label: string } | null>(null);
   const [miles, setMiles] = useState(10);
   const [spots, setSpots] = useState<NearbySpot[]>([]);
@@ -230,6 +234,11 @@ function NearPage() {
                 <ol className="mt-4 divide-y divide-line overflow-hidden rounded-md border border-line">
                   {spots.map((spot, index) => {
                     const on = spot.id === selected?.id;
+                    const allCredits = spot.filmCredits ?? (spot.credits ? [spot.credits] : []);
+                    const extra = Math.max(0, allCredits.length - FILMS_SHOWN, spot.films.length - FILMS_SHOWN);
+                    const open = extra > 0 && expanded.has(spot.id);
+                    const credits = open ? allCredits.join(", ") : allCredits.slice(0, FILMS_SHOWN).join(", ");
+                    const films = open ? spot.films : spot.films.slice(0, FILMS_SHOWN);
                     return (
                       <li key={spot.id} className={on ? "bg-surface" : "bg-bg"}>
                         <button
@@ -250,10 +259,11 @@ function NearPage() {
                           )}
                           <span className="min-w-0 flex-1">
                             <span className={"block text-sm " + (on ? "text-accent" : "")}>{spot.name}</span>
-                            {spot.credits ? (
+                            {credits ? (
                               <span className="mt-0.5 block text-xs text-pretty">
                                 <span className="text-muted">Filmed here: </span>
-                                {spot.credits}
+                                {credits}
+                                {extra > 0 && !open && <span className="text-muted">, +{extra} more</span>}
                               </span>
                             ) : (
                               <span className="mt-0.5 block text-xs text-pretty text-muted">
@@ -264,8 +274,8 @@ function NearPage() {
                           </span>
                           <span className="shrink-0 text-xs text-muted">{milesAway(spot.distanceKm)}</span>
                         </button>
-                        <div className="flex flex-wrap gap-x-3 gap-y-1 px-12 pb-2 text-xs">
-                          {spot.films.map((film) => (
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-12 pb-2 text-xs">
+                          {films.map((film) => (
                             <a
                               key={film}
                               className="text-fg underline decoration-line underline-offset-4"
@@ -274,6 +284,23 @@ function NearPage() {
                               {film}
                             </a>
                           ))}
+                          {extra > 0 && (
+                            <button
+                              type="button"
+                              className="near-press -my-2 inline-flex min-h-11 items-center px-1 text-accent underline decoration-line underline-offset-4"
+                              aria-expanded={open}
+                              onClick={() =>
+                                setExpanded((prev) => {
+                                  const next = new Set(prev);
+                                  if (next.has(spot.id)) next.delete(spot.id);
+                                  else next.add(spot.id);
+                                  return next;
+                                })
+                              }
+                            >
+                              {open ? "Less" : `More (${extra})`}
+                            </button>
+                          )}
                           <a
                             className="text-muted underline decoration-line underline-offset-4"
                             href={`https://www.google.com/maps/search/?api=1&query=${spot.lat},${spot.lng}`}

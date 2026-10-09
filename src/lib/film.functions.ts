@@ -2201,20 +2201,21 @@ async function readPlacePage(url) {
 	if (!res.ok) return null;
 	return parseLocationPage(await res.text());
 }
-const NEAR_FILMS = 4;
 // Every production the atlas records at a place: Wikidata's "filmed at" list
 // first, then the ones Wikipedia articles name. The atlas API is CORS-enabled,
 // so this is the same on the server and on the static GitHub Pages build.
 async function atlasPlace(slug, url) {
 	const place = slug || String(url || "").match(/\/locations\/([^/?#]+)/)?.[1];
 	if (!place) return null;
-	const raw = await mcp("what_was_filmed_here", { place: decodeURIComponent(place), limit: 12 });
+	const raw = await mcp("what_was_filmed_here", { place: decodeURIComponent(place), limit: 100 });
 	const seen = new Set();
 	const films = [];
 	for (const film of [...(raw.filmed_here ?? []), ...(raw.filmed_here_per_wikipedia ?? [])]) {
 		const title = String(film?.name ?? "").trim();
 		const key = film?.slug || title.toLowerCase();
 		if (!title || seen.has(key)) continue;
+		// Games and anime can be "set in" a place rather than filmed there.
+		if (film.relation && !/filmed/i.test(String(film.relation))) continue;
 		seen.add(key);
 		films.push({ title, year: film.year ? String(film.year) : "" });
 	}
@@ -2356,7 +2357,7 @@ export const nearbyFilms = createServerFn({ method: "POST" }).validator((input) 
 	if (!Number.isFinite(miles) || miles < 0 || miles > 100) throw new Error("Pick a distance from 0 to 100 miles.");
 	return { lat, lng, radiusKm: Math.max(1, miles * 1.609344) };
 }).handler(async ({ data }) => {
-	const key = `v6|${data.lat.toFixed(2)}|${data.lng.toFixed(2)}|${data.radiusKm.toFixed(1)}`;
+	const key = `v7|${data.lat.toFixed(2)}|${data.lng.toFixed(2)}|${data.radiusKm.toFixed(1)}`;
 	const cached = fresh(nearCache.get(key));
 	if (cached) return cached;
 	const raw = await mcp("locations_near", {
@@ -2382,9 +2383,10 @@ export const nearbyFilms = createServerFn({ method: "POST" }).validator((input) 
 	const spots = ranked.map((row, index) => {
 		const page = pages[index];
 		const atlas = atlases[index];
-		const filmed = (atlas?.films?.length ? atlas.films : page?.films?.length ? page.films : (row.top_productions ?? []).filter(Boolean).map((title) => ({ title, year: "" }))).slice(0, NEAR_FILMS);
+		const filmed = (atlas?.films?.length ? atlas.films : page?.films?.length ? page.films : (row.top_productions ?? []).filter(Boolean).map((title) => ({ title, year: "" })));
 		const scene = page?.quote || wikiNotes.get(index) || "";
-		const credits = filmed.map((film) => film.year ? `${film.title} (${film.year})` : film.title).filter(Boolean).join(", ");
+		const filmCredits = filmed.map((film) => film.year ? `${film.title} (${film.year})` : film.title).filter(Boolean);
+		const credits = filmCredits.slice(0, 4).join(", ");
 		return {
 			id: row.slug || `${row.latitude},${row.longitude}`,
 			name: row.name,
@@ -2396,6 +2398,7 @@ export const nearbyFilms = createServerFn({ method: "POST" }).validator((input) 
 			distanceKm: typeof row.distance_km === "number" ? row.distance_km : 0,
 			films: filmed.map((film) => film.title).filter(Boolean),
 			credits,
+			filmCredits,
 			scene,
 			page: row.page || "",
 			image: page?.image || atlas?.image,
