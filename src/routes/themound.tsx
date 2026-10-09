@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MoundApp } from "@/components/mound-app";
+import { MoundGate } from "@/components/mound-gate";
 
 export const Route = createFileRoute("/themound")({
   head: () => ({
@@ -18,5 +19,13 @@ export const Route = createFileRoute("/themound")({
       },
     ],
   }),
-  component: MoundApp,
+  component: TheMound,
 });
+
+function TheMound() {
+  return (
+    <MoundGate>
+      <MoundApp />
+    </MoundGate>
+  );
+}

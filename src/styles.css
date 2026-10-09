@@ -871,3 +871,85 @@
     height: 16rem;
   }
 }
+
+/* Password gate in front of The Mound (src/components/mound-gate.tsx). */
+.mound-gate {
+  display: flex;
+  min-height: 100vh;
+  align-items: flex-end;
+  padding: 0;
+}
+
+.mound-gate-card {
+  width: 100%;
+  max-width: 34rem;
+  padding: 1.5rem 1.25rem 2rem;
+}
+
+.mound-gate-card .mound-title {
+  margin-bottom: 1.25rem;
+}
+
+.mound-gate-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: var(--mound-muted);
+  font-size: 0.85rem;
+}
+
+.mound-gate-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.mound-gate-row input {
+  min-width: 0;
+  flex: 1;
+  min-height: 2.75rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--mound-muted);
+  border-radius: 0;
+  background: transparent;
+  color: var(--mound-paper);
+  font: inherit;
+  /* 16px or more stops iOS Safari zooming in on focus. */
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+.mound-gate-row input:focus {
+  border-color: var(--mound-sodium);
+  outline: 2px solid var(--mound-sodium);
+  outline-offset: 1px;
+}
+
+.mound-gate-row input[aria-invalid="true"] {
+  border-color: var(--mound-blood);
+}
+
+.mound-gate-row .solid {
+  min-height: 2.75rem;
+  padding: 0.6rem 1.1rem;
+  border: 0;
+  background: var(--mound-sodium);
+  color: var(--mound-ink);
+  font-weight: 600;
+}
+
+.mound-gate-row .solid:disabled {
+  opacity: 0.5;
+}
+
+.mound-gate-error {
+  min-height: 1.25rem;
+  margin: 0.6rem 0 0;
+  color: var(--mound-sodium);
+  font-size: 0.9rem;
+}
+
+@media (min-width: 721px) {
+  .mound-gate {
+    align-items: center;
+    justify-content: center;
+  }
+}
