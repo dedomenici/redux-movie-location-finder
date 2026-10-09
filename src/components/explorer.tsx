@@ -1,7 +1,8 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ExternalLink, MapPin, Search } from "lucide-react";
-import { filmPosters, loadFilm, placePhotos, sceneFrames, streetView, suggestMovies } from "@/lib/film.functions";
+import { freshPicks, loadFilm, placePhotos, sceneFrames, streetView, suggestMovies, filmPosters } from "@/lib/film.functions";
+import { GOOD_FAVES, shuffleNine } from "@/lib/good-faves";
 import type { Dossier, FilmLocation, PlacePhoto, Still, StreetViewHit, Suggestion } from "@/lib/film-types";
 
 let sharedAudio: AudioContext | null = null;
@@ -29,158 +30,6 @@ function blip(freq: number, ms = 60, type: OscillatorType = "square", level = 0.
   amp.connect(ctx.destination);
   osc.start(t);
   osc.stop(t + ms / 1000 + 0.02);
-}
-
-const FAVES = [
-  "Tampopo",
-  "Koyaanisqatsi",
-  "The Life Aquatic with Steve Zissou",
-  "The Blues Brothers",
-  "My Life as a Dog",
-  "Akira",
-  "An American Werewolf in London",
-  "Fallen Angels",
-  "Dream Agency",
-  "Assault on Precinct 13",
-  "Clerks",
-  "Das Boot",
-  "Madonna: Truth or Dare",
-  "Full Metal Jacket",
-  "Total Recall",
-  "Contact",
-  "The Departed",
-  "Basic Instinct",
-  "The Iron Giant",
-  "Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb",
-  "The Taking of Pelham One Two Three",
-  "The Terminator",
-  "WarGames",
-  "Chungking Express",
-  "Terminator 2: Judgment Day",
-  "Trading Places",
-  "Clueless",
-  "Children of Men",
-  "Alien",
-  "Lost in Translation",
-  "2001: A Space Odyssey",
-  "Fight Club",
-  "A Clockwork Orange",
-  "E.T. the Extra-Terrestrial",
-  "Delicatessen",
-  "The Devil Wears Prada",
-  "After Hours",
-  "Nineteen Eighty-Four",
-  "Amélie",
-  "Beau Travail",
-  "Blade Runner",
-  "Die Hard",
-  "The Adventures of Buckaroo Banzai Across the 8th Dimension",
-  "Her",
-  "Catch Me If You Can",
-  "Léon: The Professional",
-  "Mon Oncle",
-  "Songs from the Second Floor",
-  "Mad Max 2",
-  "Mission: Impossible – Fallout",
-  "Eastern Promises",
-  "Jurassic Park",
-  "Bridesmaids",
-  "The Arbor",
-  "Birdman or (The Unexpected Virtue of Ignorance)",
-  "Flight of the Navigator",
-  "Triangle of Sadness",
-  "Predator",
-  "Election",
-  "The Fifth Element",
-  "In the Line of Fire",
-  "Time Bandits",
-  "Darkman",
-  "Animal Crackers",
-  "Romy and Michele's High School Reunion",
-  "Reservoir Dogs",
-  "Me and You and Everyone We Know",
-  "Working Girl",
-  "L.A. Confidential",
-  "Silkwood",
-  "The Heat",
-  "Nikita",
-  "Romance & Cigarettes",
-  "Demolition Man",
-  "L.A. Story",
-  "Duck Soup",
-  "Falling Down",
-  "London",
-  "The Rock",
-  "Tangerine",
-  "Robinson in Space",
-  "Class of 1999",
-  "Airplane!",
-  "The Truman Show",
-  "Little Shop of Horrors",
-  "Step Brothers",
-  "Amazon Women on the Moon",
-  "The Truth About Cats & Dogs",
-  "Thor: Ragnarok",
-  "Due Date",
-  "Gravity",
-  "Shame",
-  "Dredd",
-  "Big Trouble in Little China",
-  "Short Circuit",
-  "Gattaca",
-  "The Town",
-  "The Accountant",
-  "Asteroid City",
-  "Get Hard",
-  "Something Wild",
-  "The Bourne Identity",
-  "The Abyss",
-  "The Silence of the Lambs",
-  "*batteries not included",
-  "Indiana Jones and the Last Crusade",
-  "The Wackness",
-  "Jack Reacher",
-  "Police Academy",
-  "All Over Me",
-  "Gremlins 2: The New Batch",
-  "Beverly Hills Cop",
-  "Crank: High Voltage",
-  "Drive",
-  "Cold Pursuit",
-  "M3GAN",
-  "Black Rain",
-  "Michael Clayton",
-  "The Bronze",
-  "The Libertine",
-  "Wayne's World",
-  "A View to a Kill",
-  "Earth Girls Are Easy",
-  "Superman III",
-  "Central Intelligence",
-  "Bangkok Traffic (Love) Story",
-  "R.O.T.O.R.",
-  "Dirty Rotten Scoundrels",
-];
-
-function pickToday() {
-  const day = new Date().toISOString().slice(0, 10);
-  let seed = 0;
-  for (const ch of day) seed = (Math.imul(seed, 33) + ch.charCodeAt(0)) | 0;
-  const rand = () => {
-    seed |= 0;
-    seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-  const pool = FAVES.filter((title) => title.toLowerCase() !== "robocop");
-  for (let i = pool.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(rand() * (i + 1));
-    const swap = pool[i]!;
-    pool[i] = pool[j]!;
-    pool[j] = swap;
-  }
-  return ["RoboCop", ...pool.slice(0, 9)];
 }
 
 const REEL: { src: string; caption: string; href: string; pos?: string }[] = [
@@ -264,6 +113,20 @@ function shuffleReel<T>(items: readonly T[]) {
   return next;
 }
 
+function LoadingDots() {
+  return (
+    <span className="loading-dots" aria-hidden="true">
+      <span>.</span>
+      <span>.</span>
+      <span>.</span>
+    </span>
+  );
+}
+
+function titlePending(title: string): Suggestion {
+  return { imdbId: "", title, kind: "movie", qid: "movie", cast: "", director: "" };
+}
+
 function pickSuggestion(rows: Suggestion[], query: string): Suggestion | undefined {
   if (!rows.length) return undefined;
   const q = query.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
@@ -279,6 +142,13 @@ function pickSuggestion(rows: Suggestion[], query: string): Suggestion | undefin
   );
   if (movies.length) return [...movies].sort((a, b) => (b.year ?? 0) - (a.year ?? 0))[0];
   return rows.find((row) => row.title.toLowerCase() === query.toLowerCase()) ?? rows[0];
+}
+
+function sceneFilmedHere(scene: string) {
+  const text = scene.trim().replace(/^as\s+/i, "");
+  if (!text) return "";
+  if (/[.!?]$/.test(text) || (text.length > 80 && /\b(filmed|shot|scene)\b/i.test(text))) return text;
+  return `The ${text} scene was filmed here.`;
 }
 
 function tidyProse(text: string) {
@@ -305,8 +175,8 @@ function sameNote(a: string, b: string) {
   return shared / Math.min(aWords.length, bWords.length) >= 0.7;
 }
 
-export function Explorer({ initialFilm = "" }: { initialFilm?: string }) {
-  const [today] = useState(pickToday);
+export function Explorer({ initialFilm = "", picks = [] }: { initialFilm?: string; picks?: string[] }) {
+  const [today, setToday] = useState(picks);
   const listId = useId();
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -325,6 +195,49 @@ export function Explorer({ initialFilm = "" }: { initialFilm?: string }) {
   const suggestGen = useRef(0);
   const streetGen = useRef(0);
   const holdList = useRef(false);
+  const suggestCache = useRef(new Map<string, Suggestion>());
+
+  const pickKey = picks.join("\n");
+  useEffect(() => {
+    if (picks.length) setToday(picks);
+  }, [pickKey]);
+
+  useEffect(() => {
+    const onShow = (event: PageTransitionEvent) => {
+      if (!event.persisted) return;
+      freshPicks()
+        .then((next) => {
+          if (next.length) setToday(next);
+        })
+        .catch(() => setToday(shuffleNine(GOOD_FAVES)));
+    };
+    window.addEventListener("pageshow", onShow);
+    return () => window.removeEventListener("pageshow", onShow);
+  }, []);
+
+  useEffect(() => {
+    if (!today.length) return;
+    let stop = false;
+    const warm = async () => {
+      await Promise.all(
+        today.map(async (title) => {
+          const key = title.toLowerCase();
+          if (stop || suggestCache.current.has(key)) return;
+          try {
+            const hit = pickSuggestion(await suggestMovies({ data: { q: title } }), title);
+            if (hit) suggestCache.current.set(key, hit);
+          } catch {
+            /* a press will look it up again */
+          }
+        }),
+      );
+    };
+    const id = window.setTimeout(() => void warm(), 300);
+    return () => {
+      stop = true;
+      window.clearTimeout(id);
+    };
+  }, [today]);
 
   useEffect(() => {
     document.title = film
@@ -428,17 +341,23 @@ export function Explorer({ initialFilm = "" }: { initialFilm?: string }) {
     setOpenList(false);
     setBusy("film");
     setError("");
+    setFilm(null);
+    setPending(titlePending(q));
     try {
-      const rows = suggestions.length ? suggestions : await suggestMovies({ data: { q } });
-      const hit = pickSuggestion(rows, q);
+      const cached = suggestCache.current.get(q.toLowerCase());
+      const rows = cached ? [cached] : suggestions.length ? suggestions : await suggestMovies({ data: { q } });
+      const hit = cached ?? pickSuggestion(rows, q);
       if (!hit) {
         setError("No IMDb movie or series matched that.");
+        setPending(null);
         setBusy(null);
         return;
       }
+      suggestCache.current.set(hit.title.toLowerCase(), hit);
       await openSuggestion(hit);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Search failed");
+      setPending(null);
       setBusy(null);
     }
   }
@@ -449,17 +368,22 @@ export function Explorer({ initialFilm = "" }: { initialFilm?: string }) {
     setQuery(title);
     setBusy("film");
     setError("");
+    setFilm(null);
+    setPending(titlePending(title));
     try {
-      const rows = await suggestMovies({ data: { q: title } });
-      const hit = pickSuggestion(rows, title);
+      const cached = suggestCache.current.get(title.toLowerCase());
+      const hit = cached ?? pickSuggestion(await suggestMovies({ data: { q: title } }), title);
       if (!hit) {
         setError("No IMDb match.");
+        setPending(null);
         setBusy(null);
         return;
       }
+      suggestCache.current.set(title.toLowerCase(), hit);
       await openSuggestion(hit);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Search failed");
+      setPending(null);
       setBusy(null);
     }
   }
@@ -498,7 +422,7 @@ export function Explorer({ initialFilm = "" }: { initialFilm?: string }) {
     <div className="min-h-screen">
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 py-4 md:px-6">
-          <a href="/locations" className="flex flex-col items-center no-underline">
+          <a href="/" className="flex flex-col items-center no-underline">
             <img src="/redux-logo.jpg" alt="The Redux Project" className="h-16 w-auto sm:h-20 md:h-24" />
             <span className="mt-1 font-display text-xl leading-none tracking-wide whitespace-nowrap text-fg md:text-3xl">
               Movie Location Finder
@@ -613,7 +537,12 @@ export function Explorer({ initialFilm = "" }: { initialFilm?: string }) {
               {(headerDirector || headerYear) && (
                 <p className="mt-1 text-sm text-muted">{[headerDirector, headerYear].filter(Boolean).join(" · ")}</p>
               )}
-              {busy === "film" && <p className="mt-2 text-sm text-muted">Pulling places…</p>}
+              {busy === "film" && (
+                <p className="mt-2 text-sm text-muted">
+                  Searching locations
+                  <LoadingDots /> (this may take ten seconds)
+                </p>
+              )}
             </div>
             {shown && (
               <>
@@ -657,7 +586,6 @@ export function Explorer({ initialFilm = "" }: { initialFilm?: string }) {
                             <LocationMap
                               locations={[active]}
                               places={shown.locations}
-                              onPick={(id) => setActiveId(id)}
                               onReady={() => setMapReady(active.id)}
                             />
                           </>
@@ -818,40 +746,43 @@ function latTile(lat: number, z: number) {
   return ((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2) * 2 ** z;
 }
 
+function placeBlurb(place: FilmLocation) {
+  return [place.category, place.country].filter(Boolean).join(" · ");
+}
+
 function googlePinHref(place: FilmLocation) {
   const label = encodeURIComponent(place.name || "Filming location");
   return `https://www.google.com/maps?q=${place.lat},${place.lng}+(${label})`;
 }
 
-function placeBlurb(place: FilmLocation) {
-  return [place.category, place.country].filter(Boolean).join(" · ");
-}
-
 function LocationMap({
   locations,
   places,
-  onPick,
   onReady,
 }: {
   locations: FilmLocation[];
   places: FilmLocation[];
-  onPick?: (id: string) => void;
   onReady?: () => void;
 }) {
-  const loc = locations[0];
+  const pinned = locations[0];
+  const [focusId, setFocusId] = useState(pinned?.id ?? "");
+  useEffect(() => {
+    if (pinned?.id) setFocusId(pinned.id);
+  }, [pinned?.id]);
+  const loc = places.find((place) => place.id === focusId) ?? pinned;
   const readyRef = useRef(onReady);
   readyRef.current = onReady;
   const told = useRef("");
   useEffect(() => {
-    if (!loc) return;
-    const id = loc.id;
+    if (!pinned) return;
+    const id = pinned.id;
     const timer = window.setTimeout(() => {
       if (told.current === id) return;
       told.current = id;
       readyRef.current?.();
     }, 1600);
     return () => window.clearTimeout(timer);
-  }, [loc]);
+  }, [pinned?.id]);
   const [satellite, setSatellite] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const placeKey = places.map((place) => place.id).join("|");
@@ -1094,7 +1025,7 @@ function LocationMap({
                   title={place.name}
                   className={"absolute flex -translate-x-1/2 -translate-y-full flex-col items-center " + (on ? "z-20" : "z-10")}
                   style={{ left: pos.left, top: pos.top }}
-                  onClick={() => onPick?.(place.id)}
+                  onClick={() => setFocusId(place.id)}
                 >
                   {on && (
                     <span className="mb-1 max-w-40 truncate rounded-sm bg-bg/90 px-1 text-xs text-fg">{place.name}</span>
@@ -1152,10 +1083,7 @@ function LocationMap({
                 <button
                   type="button"
                   className="min-h-11 flex-1 py-2 text-left hover:text-accent"
-                  onClick={() => {
-                    onPick?.(place.id);
-                    setShowAll(false);
-                  }}
+                  onClick={() => setFocusId(place.id)}
                 >
                   <span className={on ? "text-accent" : "text-fg"}>{place.name}</span>
                   <span className="mt-0.5 block text-xs text-pretty text-muted">{placeBlurb(place)}</span>
@@ -1399,7 +1327,7 @@ function StreetPane({
     ])
       .then(([rows, frames]) => {
         if (!live) return;
-        const movie = rows.find((row) => row.kind === "still");
+        const movie = rows.find((row: PlacePhoto) => row.kind === "still");
         const frame = frames[0];
         const picked =
           movie ??
@@ -1494,9 +1422,19 @@ function StreetPane({
         <div className="flex min-h-11 items-center gap-2">
           <MapPin className="size-4 shrink-0 text-lamp" aria-hidden="true" />
           <p className="min-w-0 flex-1 font-display text-xl leading-none tracking-wide text-pretty" aria-live="polite">
-            {loading && <span className="text-muted">ACQUIRING SIGNAL</span>}
+            {loading && (
+              <span className="text-muted">
+                ACQUIRING SIGNAL
+                <LoadingDots />
+              </span>
+            )}
             {error && <span className="font-sans text-sm tracking-normal text-accent">{error}</span>}
-            {!loading && !error && <span>{settled ? "MOVIE LOCATION FOUND!" : status}</span>}
+            {!loading && !error && (
+              <span>
+                {settled ? "MOVIE LOCATION FOUND!" : status}
+                {!settled && <LoadingDots />}
+              </span>
+            )}
           </p>
         </div>
       </div>
@@ -1559,6 +1497,7 @@ function StreetPane({
       )}
       <div className="space-y-2 px-3 py-3 text-sm">
         {settled && <p className="font-display text-2xl leading-none tracking-wide text-accent">Movie location found!</p>}
+        {settled && location.scene && <p className="text-pretty text-fg">{sceneFilmedHere(location.scene)}</p>}
         <p className="text-pretty text-fg">{location.name}</p>
         <p className="text-pretty text-fg">{address}</p>
         <p className="text-pretty text-muted">{location.precisionNote}</p>

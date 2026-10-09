@@ -3,7 +3,7 @@ import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import appCss from "../styles.css?url";
 
-const APP_NAME = "Richard DeDomenici";
+const APP_NAME = "The Redux Project Movie Location Finder";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -13,9 +13,9 @@ export const Route = createRootRoute({
       { title: APP_NAME },
       {
         name: "description",
-        content: "Richard DeDomenici. Artist, filmmaker, raconteur, and manufacturer of dangerous toys since 1798.",
+        content: "Search a movie and look at the street where it was filmed.",
       },
-      { name: "theme-color", content: "#0c7c84" },
+      { name: "theme-color", content: "#ffffff" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },

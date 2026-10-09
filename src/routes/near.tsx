@@ -7,40 +7,67 @@ export const Route = createFileRoute("/near")({
   component: NearPage,
 });
 
-const RADII = [10, 25, 80] as const;
+function Dots() {
+  return (
+    <span className="loading-dots" aria-hidden="true">
+      <span>.</span>
+      <span>.</span>
+      <span>.</span>
+    </span>
+  );
+}
+
+function milesAway(km: number) {
+  const miles = km * 0.621371;
+  if (miles < 0.1) return "right here";
+  if (miles < 10) return `${miles.toFixed(1)} miles`;
+  return `${Math.round(miles)} miles`;
+}
 
 function NearPage() {
   const [status, setStatus] = useState<"idle" | "locating" | "loading" | "ready">("idle");
   const [error, setError] = useState("");
   const [you, setYou] = useState<{ lat: number; lng: number; label: string } | null>(null);
-  const [radius, setRadius] = useState<(typeof RADII)[number]>(25);
+  const [miles, setMiles] = useState(10);
   const [spots, setSpots] = useState<NearbySpot[]>([]);
   const [total, setTotal] = useState(0);
   const [selectedId, setSelectedId] = useState("");
   const [place, setPlace] = useState("");
+  const [pending, setPending] = useState<"" | "you" | "place">("");
   const gen = useRef(0);
+  const wait = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  async function load(lat: number, lng: number, nextRadius: number, label: string) {
+  async function load(lat: number, lng: number, nextMiles: number, label: string) {
     const id = ++gen.current;
     setYou({ lat, lng, label });
-    setRadius(nextRadius as (typeof RADII)[number]);
-    setSpots([]);
     setStatus("loading");
     setError("");
     try {
-      const result = await nearbyFilms({ data: { lat, lng, radiusKm: nextRadius } });
+      const result = await nearbyFilms({ data: { lat, lng, radiusMiles: nextMiles } });
       if (gen.current !== id) return;
-      setSpots(result.spots);
+      const ordered = [...result.spots].sort((a, b) => a.distanceKm - b.distanceKm);
+      setSpots(ordered);
       setTotal(result.total);
-      setSelectedId(result.spots[0]?.id ?? "");
+      setSelectedId(ordered[0]?.id ?? "");
       setStatus("ready");
-      if (!result.spots.length) setError("Nothing mapped in that radius. Try a wider one.");
+      setPending("");
+      if (!ordered.length) setError("Nothing that close. Slide further out.");
     } catch (err) {
       if (gen.current !== id) return;
       setSpots([]);
       setStatus("ready");
+      setPending("");
       setError(err instanceof Error ? err.message : "Couldn't load nearby filming locations.");
     }
+  }
+
+  function onMiles(value: number) {
+    setMiles(value);
+    if (!you) return;
+    if (wait.current) clearTimeout(wait.current);
+    wait.current = setTimeout(() => {
+      void load(you.lat, you.lng, value, you.label);
+    }, 400);
   }
 
   function locate() {
@@ -49,13 +76,15 @@ function NearPage() {
       return;
     }
     setStatus("locating");
+    setPending("you");
     setError("");
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        void load(pos.coords.latitude, pos.coords.longitude, radius, "You");
+        void load(pos.coords.latitude, pos.coords.longitude, miles, "You");
       },
       (err) => {
         setStatus("idle");
+        setPending("");
         if (err.code === err.PERMISSION_DENIED) {
           setError("Location is blocked. Allow it in the browser, or type a place below.");
         } else if (err.code === err.TIMEOUT) {
@@ -64,7 +93,7 @@ function NearPage() {
           setError("No location signal. Type a place instead.");
         }
       },
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60_000 },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 120_000 },
     );
   }
 
@@ -73,17 +102,20 @@ function NearPage() {
     const q = place.trim();
     if (q.length < 2) return;
     setStatus("loading");
+    setPending("place");
     setError("");
     try {
       const hit = await geocodePlace({ data: { q } });
       if (!hit) {
         setStatus(you ? "ready" : "idle");
+        setPending("");
         setError("That place didn't turn up.");
         return;
       }
-      await load(hit.lat, hit.lng, radius, hit.name);
+      await load(hit.lat, hit.lng, miles, hit.name);
     } catch (err) {
       setStatus(you ? "ready" : "idle");
+      setPending("");
       setError(err instanceof Error ? err.message : "Place search failed");
     }
   }
@@ -94,13 +126,13 @@ function NearPage() {
     <div className="min-h-screen">
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 py-4 md:px-6">
-          <a href="/locations" className="flex flex-col items-center no-underline">
+          <a href="/" className="flex flex-col items-center no-underline">
             <img src="/redux-logo.jpg" alt="The Redux Project" className="h-16 w-auto sm:h-20 md:h-24" />
             <span className="mt-1 font-display text-xl leading-none tracking-wide whitespace-nowrap text-fg md:text-3xl">
               Movie Location Finder
             </span>
           </a>
-          <Link to="/locations" search={{ film: "" }} className="text-xs text-muted underline decoration-line underline-offset-4">
+          <Link to="/" search={{ film: "" }} className="text-xs text-muted underline decoration-line underline-offset-4">
             back to search
           </Link>
         </div>
@@ -116,11 +148,23 @@ function NearPage() {
         <div className="mt-5 flex justify-center">
           <button
             type="button"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-accent px-5 text-sm text-bg disabled:opacity-60"
+            className="near-press inline-flex min-h-11 items-center justify-center rounded-full bg-accent px-5 text-sm text-bg disabled:opacity-60"
             onClick={locate}
             disabled={status === "locating" || status === "loading"}
           >
-            {status === "locating" ? "Finding you…" : status === "loading" ? "Plotting locations…" : "Or find movie locations near you!"}
+            {status === "locating" ? (
+              <>
+                Finding you
+                <Dots />
+              </>
+            ) : status === "loading" ? (
+              <>
+                Searching
+                <Dots />
+              </>
+            ) : (
+              "Or find movie locations near you!"
+            )}
           </button>
         </div>
         <form className="mx-auto mt-4 flex max-w-md gap-2" onSubmit={(event) => void onPlace(event)}>
@@ -134,10 +178,41 @@ function NearPage() {
             placeholder="OR TYPE A PLACE"
             className="min-h-11 min-w-0 flex-1 rounded-full border border-line bg-surface px-4 text-sm text-accent placeholder:text-[#b5b5b5] outline-none"
           />
-          <button type="submit" className="min-h-11 rounded-full border border-line px-4 text-sm">
-            Go
+          <button type="submit" className="near-press inline-flex min-h-11 items-center rounded-full border border-line px-4 text-sm" disabled={pending === "place"}>
+            {pending === "place" ? (
+              <>
+                Searching
+                <Dots />
+              </>
+            ) : (
+              "Go"
+            )}
           </button>
         </form>
+        <label className="mx-auto mt-5 flex max-w-md flex-col gap-1 text-xs text-muted">
+          <span>
+            {miles} {miles === 1 ? "mile" : "miles"}
+            {status === "loading" ? (
+              <>
+                {" "}
+                · searching
+                <Dots />
+              </>
+            ) : (
+              ""
+            )}
+          </span>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            value={miles}
+            aria-label="Distance in miles"
+            className="h-11 w-full accent-accent"
+            onChange={(event) => onMiles(Number(event.target.value))}
+          />
+        </label>
         {error && (
           <p className="mx-auto mt-4 max-w-xl text-center text-sm text-accent" role="alert">
             {error}
@@ -145,95 +220,64 @@ function NearPage() {
         )}
         {you && status !== "idle" && (
           <section className="mt-8">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <p className="text-sm text-muted">
-                {you.label === "You" ? "Near your location" : you.label}
-                {total > spots.length ? ` · ${total} places in range, showing ${spots.length}` : ""}
-              </p>
-              <div className="flex gap-2">
-                {RADII.map((km) => (
-                  <button
-                    key={km}
-                    type="button"
-                    className={
-                      "min-h-11 rounded-full border px-3 text-xs " +
-                      (radius === km ? "border-accent text-accent" : "border-line text-muted")
-                    }
-                    onClick={() => void load(you.lat, you.lng, km, you.label)}
-                  >
-                    {km} km
-                  </button>
-                ))}
-              </div>
-            </div>
+            <p className="text-sm text-muted">
+              {you.label === "You" ? "Near your location" : you.label}
+              {total > spots.length ? ` · ${total} places in range, showing ${spots.length}` : ""}
+            </p>
             {spots.length > 0 && (
               <>
-                <NearbyMap you={you} spots={spots} selectedId={selected?.id ?? ""} onSelect={setSelectedId} />
-                <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {spots.map((spot) => {
+                <ol className="mt-4 divide-y divide-line overflow-hidden rounded-md border border-line">
+                  {spots.map((spot, index) => {
                     const on = spot.id === selected?.id;
                     return (
-                      <li key={spot.id}>
-                        <article
-                          className={
-                            "overflow-hidden rounded-md border bg-bg " + (on ? "border-accent" : "border-line")
-                          }
+                      <li key={spot.id} className={on ? "bg-surface" : "bg-bg"}>
+                        <button
+                          type="button"
+                          className="near-press flex min-h-11 w-full items-start gap-3 px-3 py-2 text-left"
+                          onClick={() => setSelectedId(spot.id)}
                         >
-                          <button type="button" className="block w-full text-left" onClick={() => setSelectedId(spot.id)}>
-                            {spot.image ? (
-                              <img
-                                src={spot.image}
-                                alt={spot.imageCaption || spot.name}
-                                className="h-44 w-full object-cover"
-                                referrerPolicy="no-referrer"
-                              />
-                            ) : (
-                              <div className="flex h-24 items-center justify-center bg-surface text-xs text-muted">
-                                No photo yet
-                              </div>
-                            )}
-                            <div className="px-3 py-3">
-                              <h2 className="text-sm">{spot.name}</h2>
-                              <p className="mt-1 text-xs text-muted">
-                                {spot.distanceKm < 0.1 ? "right here" : `${spot.distanceKm.toFixed(1)} km`}
-                                {spot.category ? ` · ${spot.category}` : ""}
-                              </p>
-                            </div>
-                          </button>
-                          <div className="flex flex-wrap gap-x-3 gap-y-1 px-3 pb-3 text-xs">
-                            {spot.films.map((film) => (
-                              <a
-                                key={film}
-                                className="text-fg underline decoration-line underline-offset-4"
-                                href={`/?film=${encodeURIComponent(film)}`}
-                              >
-                                {film}
-                              </a>
-                            ))}
+                          <span className="w-6 shrink-0 text-xs text-muted">{index + 1}</span>
+                          {spot.image ? (
+                            <img
+                              src={spot.image}
+                              alt=""
+                              className="h-12 w-16 shrink-0 rounded-sm object-cover"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <span className="h-12 w-16 shrink-0 rounded-sm bg-surface" />
+                          )}
+                          <span className="min-w-0 flex-1">
+                            <span className={"block text-sm " + (on ? "text-accent" : "")}>{spot.name}</span>
+                            {spot.credits && <span className="mt-0.5 block text-xs text-pretty">{spot.credits}</span>}
+                            {spot.scene && <span className="mt-0.5 block text-xs text-pretty text-muted">{spot.scene}</span>}
+                          </span>
+                          <span className="shrink-0 text-xs text-muted">{milesAway(spot.distanceKm)}</span>
+                        </button>
+                        <div className="flex flex-wrap gap-x-3 gap-y-1 px-12 pb-2 text-xs">
+                          {spot.films.map((film) => (
                             <a
-                              className="text-muted underline decoration-line underline-offset-4"
-                              href={`https://www.google.com/maps/search/?api=1&query=${spot.lat},${spot.lng}`}
-                              target="_blank"
-                              rel="noreferrer"
+                              key={film}
+                              className="text-fg underline decoration-line underline-offset-4"
+                              href={`/?film=${encodeURIComponent(film)}`}
                             >
-                              map
+                              {film}
                             </a>
-                            {spot.page && (
-                              <a
-                                className="text-muted underline decoration-line underline-offset-4"
-                                href={spot.page}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                source
-                              </a>
-                            )}
-                          </div>
-                        </article>
+                          ))}
+                          <a
+                            className="text-muted underline decoration-line underline-offset-4"
+                            href={`https://www.google.com/maps/search/?api=1&query=${spot.lat},${spot.lng}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            map
+                          </a>
+                        </div>
                       </li>
                     );
                   })}
-                </ul>
+                </ol>
+                <NearbyMap you={you} spots={spots} selectedId={selected?.id ?? ""} onSelect={setSelectedId} />
               </>
             )}
           </section>
@@ -270,10 +314,12 @@ function NearbyMap({
   const frameRef = useRef<HTMLDivElement>(null);
   const [frame, setFrame] = useState({ w: 640, h: 384 });
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [userZoom, setUserZoom] = useState(1);
   const drag = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
 
   useEffect(() => {
     setPan({ x: 0, y: 0 });
+    setUserZoom(1);
   }, [you.lat, you.lng, spots]);
 
   useEffect(() => {
@@ -326,12 +372,24 @@ function NearbyMap({
     return { zoom, cx, cy, x0, y0, tiles, scale, width: spanX * 256, height: spanY * 256 };
   }, [points, frame.w, frame.h]);
 
+  useEffect(() => {
+    const el = frameRef.current;
+    if (!el) return;
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      const next = event.deltaY > 0 ? 0.9 : 1.12;
+      setUserZoom((zoom) => Math.min(4, Math.max(1, Math.round(zoom * next * 100) / 100)));
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
   function place(lat: number, lng: number) {
     const fx = lonTile(lng, view.zoom);
     const fy = latTile(lat, view.zoom);
     return {
-      left: frame.w / 2 + pan.x + (fx - view.cx) * 256 * view.scale,
-      top: frame.h / 2 + pan.y + (fy - view.cy) * 256 * view.scale,
+      left: frame.w / 2 + (fx - view.cx) * 256 * view.scale,
+      top: frame.h / 2 + (fy - view.cy) * 256 * view.scale,
     };
   }
 
@@ -339,6 +397,7 @@ function NearbyMap({
   const originTop = (view.y0 - view.cy) * 256;
 
   return (
+    <>
     <div
       ref={frameRef}
       className="relative mt-3 h-96 cursor-grab touch-none overflow-hidden rounded-md border border-line bg-surface select-none active:cursor-grabbing"
@@ -364,11 +423,15 @@ function NearbyMap({
       }}
     >
       <div
+        className="absolute inset-0"
+        style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${userZoom})`, transformOrigin: "center center" }}
+      >
+      <div
         className="absolute top-1/2 left-1/2"
         style={{
           width: view.width,
           height: view.height,
-          transform: `translate(${pan.x + originLeft * view.scale}px, ${pan.y + originTop * view.scale}px) scale(${view.scale})`,
+          transform: `translate(${originLeft * view.scale}px, ${originTop * view.scale}px) scale(${view.scale})`,
           transformOrigin: "0 0",
         }}
       >
@@ -417,9 +480,24 @@ function NearbyMap({
           />
         );
       })()}
-      <p className="pointer-events-none absolute right-2 bottom-2 rounded-sm bg-bg/90 px-1.5 py-0.5 text-[10px] text-muted">
+      </div>
+      <p className="pointer-events-none absolute right-2 bottom-2 z-20 rounded-sm bg-bg/90 px-1.5 py-0.5 text-[10px] text-muted">
         Map data © Google
       </p>
     </div>
+    <label className="mt-2 flex items-center gap-3 text-xs text-muted">
+      <span className="w-10 shrink-0">Zoom</span>
+      <input
+        type="range"
+        min={1}
+        max={4}
+        step={0.1}
+        value={userZoom}
+        aria-label="Map zoom"
+        className="h-11 w-full accent-accent"
+        onChange={(event) => setUserZoom(Number(event.target.value))}
+      />
+    </label>
+    </>
   );
 }

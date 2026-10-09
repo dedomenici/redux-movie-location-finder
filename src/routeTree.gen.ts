@@ -10,8 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DedomeniciRouteImport } from './routes/dedomenici'
+import { Route as Dedomenici2RouteImport } from './routes/dedomenici2'
 import { Route as LocationsRouteImport } from './routes/locations'
+import { Route as MoundRouteImport } from './routes/mound'
 import { Route as NearRouteImport } from './routes/near'
+import { Route as ThemoundRouteImport } from './routes/themound'
 import { Route as ApiPanoRouteImport } from './routes/api/pano'
 import { Route as ApiTileRouteImport } from './routes/api/tile'
 
@@ -20,14 +24,34 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DedomeniciRoute = DedomeniciRouteImport.update({
+  id: '/dedomenici',
+  path: '/dedomenici',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Dedomenici2Route = Dedomenici2RouteImport.update({
+  id: '/dedomenici2',
+  path: '/dedomenici2',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LocationsRoute = LocationsRouteImport.update({
   id: '/locations',
   path: '/locations',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MoundRoute = MoundRouteImport.update({
+  id: '/mound',
+  path: '/mound',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NearRoute = NearRouteImport.update({
   id: '/near',
   path: '/near',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ThemoundRoute = ThemoundRouteImport.update({
+  id: '/themound',
+  path: '/themound',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPanoRoute = ApiPanoRouteImport.update({
@@ -43,38 +67,82 @@ const ApiTileRoute = ApiTileRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dedomenici': typeof DedomeniciRoute
+  '/dedomenici2': typeof Dedomenici2Route
   '/locations': typeof LocationsRoute
+  '/mound': typeof MoundRoute
   '/near': typeof NearRoute
+  '/themound': typeof ThemoundRoute
   '/api/pano': typeof ApiPanoRoute
   '/api/tile': typeof ApiTileRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dedomenici': typeof DedomeniciRoute
+  '/dedomenici2': typeof Dedomenici2Route
   '/locations': typeof LocationsRoute
+  '/mound': typeof MoundRoute
   '/near': typeof NearRoute
+  '/themound': typeof ThemoundRoute
   '/api/pano': typeof ApiPanoRoute
   '/api/tile': typeof ApiTileRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dedomenici': typeof DedomeniciRoute
+  '/dedomenici2': typeof Dedomenici2Route
   '/locations': typeof LocationsRoute
+  '/mound': typeof MoundRoute
   '/near': typeof NearRoute
+  '/themound': typeof ThemoundRoute
   '/api/pano': typeof ApiPanoRoute
   '/api/tile': typeof ApiTileRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/locations' | '/near' | '/api/pano' | '/api/tile'
+  fullPaths:
+    | '/'
+    | '/dedomenici'
+    | '/dedomenici2'
+    | '/locations'
+    | '/mound'
+    | '/near'
+    | '/themound'
+    | '/api/pano'
+    | '/api/tile'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/locations' | '/near' | '/api/pano' | '/api/tile'
-  id: '__root__' | '/' | '/locations' | '/near' | '/api/pano' | '/api/tile'
+  to:
+    | '/'
+    | '/dedomenici'
+    | '/dedomenici2'
+    | '/locations'
+    | '/mound'
+    | '/near'
+    | '/themound'
+    | '/api/pano'
+    | '/api/tile'
+  id:
+    | '__root__'
+    | '/'
+    | '/dedomenici'
+    | '/dedomenici2'
+    | '/locations'
+    | '/mound'
+    | '/near'
+    | '/themound'
+    | '/api/pano'
+    | '/api/tile'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DedomeniciRoute: typeof DedomeniciRoute
+  Dedomenici2Route: typeof Dedomenici2Route
   LocationsRoute: typeof LocationsRoute
+  MoundRoute: typeof MoundRoute
   NearRoute: typeof NearRoute
+  ThemoundRoute: typeof ThemoundRoute
   ApiPanoRoute: typeof ApiPanoRoute
   ApiTileRoute: typeof ApiTileRoute
 }
@@ -88,6 +156,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dedomenici': {
+      id: '/dedomenici'
+      path: '/dedomenici'
+      fullPath: '/dedomenici'
+      preLoaderRoute: typeof DedomeniciRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dedomenici2': {
+      id: '/dedomenici2'
+      path: '/dedomenici2'
+      fullPath: '/dedomenici2'
+      preLoaderRoute: typeof Dedomenici2RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/locations': {
       id: '/locations'
       path: '/locations'
@@ -95,11 +177,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mound': {
+      id: '/mound'
+      path: '/mound'
+      fullPath: '/mound'
+      preLoaderRoute: typeof MoundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/near': {
       id: '/near'
       path: '/near'
       fullPath: '/near'
       preLoaderRoute: typeof NearRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/themound': {
+      id: '/themound'
+      path: '/themound'
+      fullPath: '/themound'
+      preLoaderRoute: typeof ThemoundRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/pano': {
@@ -121,8 +217,12 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DedomeniciRoute: DedomeniciRoute,
+  Dedomenici2Route: Dedomenici2Route,
   LocationsRoute: LocationsRoute,
+  MoundRoute: MoundRoute,
   NearRoute: NearRoute,
+  ThemoundRoute: ThemoundRoute,
   ApiPanoRoute: ApiPanoRoute,
   ApiTileRoute: ApiTileRoute,
 }

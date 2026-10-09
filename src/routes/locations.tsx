@@ -1,5 +1,6 @@
 import { createFileRoute, stripSearchParams } from "@tanstack/react-router";
 import { Explorer } from "@/components/explorer";
+import { freshPicks } from "@/lib/film.functions";
 
 const defaultSearch = { film: "" };
 
@@ -20,10 +21,15 @@ export const Route = createFileRoute("/locations")({
       { name: "theme-color", content: "#ffffff" },
     ],
   }),
+  loader: () => freshPicks(),
+  staleTime: 0,
+  preloadStaleTime: 0,
+  headers: () => ({ "Cache-Control": "no-store" }),
   component: Locations,
 });
 
 function Locations() {
+  const picks = Route.useLoaderData();
   const { film } = Route.useSearch();
-  return <Explorer initialFilm={film} />;
+  return <Explorer initialFilm={film} picks={picks} />;
 }

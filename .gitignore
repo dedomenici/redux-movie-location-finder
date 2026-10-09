@@ -1,0 +1,17 @@
+node_modules
+dist
+.output
+.vercel
+.env
+.env.*
+!.env.example
+artifacts
+screenshots
+.grok
+.project_id
+.node_modules.lock
+attachments
+*.log
+.DS_Store
+
+.grok

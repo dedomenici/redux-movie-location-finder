@@ -15,7 +15,7 @@ export type FilmLocation = {
   country: string;
   category: string;
   precision: string;
-  source: "wikidata" | "wikipedia";
+  source: "wikidata" | "wikipedia" | "imdb" | "reelstreets" | "guide";
   lat: number;
   lng: number;
   address: string;
@@ -64,6 +64,8 @@ export type NearbySpot = {
   lng: number;
   distanceKm: number;
   films: string[];
+  credits?: string;
+  scene?: string;
   page: string;
   image?: string;
   imageCaption?: string;

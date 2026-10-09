@@ -263,7 +263,7 @@ export function DedomeniciSite() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="rounded-full bg-bubble px-3 py-2 text-sm text-ink">Artist · Filmmaker · Raconteur</p>
           <Link
-            to="/locations"
+            to="/"
             search={{ film: "" }}
             className="inline-flex min-h-11 items-center rounded-full bg-yolk px-4 text-sm text-ink no-underline"
           >
@@ -408,7 +408,7 @@ export function DedomeniciSite() {
           <a className="inline-flex min-h-11 items-center text-aqua underline" href="https://dedomenici.com" target="_blank" rel="noreferrer">
             dedomenici.com
           </a>
-          <Link to="/locations" search={{ film: "" }} className="inline-flex min-h-11 items-center text-flare underline">
+          <Link to="/" search={{ film: "" }} className="inline-flex min-h-11 items-center text-flare underline">
             Movie Location Finder
           </Link>
         </p>
