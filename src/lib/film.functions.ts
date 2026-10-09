@@ -2194,12 +2194,27 @@ async function localScene(country, title, place) {
 }
 async function readPlacePage(url) {
 	if (!url) return null;
-	const res = await fetch(url, {
-		headers: { "user-agent": UA, accept: "text/html" },
-		signal: AbortSignal.timeout(4000)
-	});
-	if (!res.ok) return null;
-	return parseLocationPage(await res.text());
+	try {
+		const res = await fetch(url, {
+			headers: { "user-agent": UA, accept: "text/html" },
+			signal: AbortSignal.timeout(4000)
+		});
+		if (res.ok) {
+			const parsed = parseLocationPage(await res.text());
+			if (parsed.films.length || parsed.quote || parsed.image) return parsed;
+		}
+	} catch {}
+	return atlasPlace(url);
+}
+// Same facts from the atlas API when the HTML page can't be read (it has no
+// CORS headers, so the static GitHub Pages build always lands here).
+async function atlasPlace(url) {
+	const slug = String(url).match(/\/locations\/([^/?#]+)/)?.[1];
+	if (!slug) return null;
+	const raw = await mcp("what_was_filmed_here", { place: decodeURIComponent(slug), limit: 3 });
+	const films = (raw.filmed_here ?? []).filter((film) => film?.name).slice(0, 3).map((film) => ({ title: String(film.name), year: film.year ? String(film.year) : "" }));
+	const image = typeof raw.image === "string" && raw.image.startsWith("https://") ? raw.image : void 0;
+	return { quote: "", films, image };
 }
 async function mapPool(items, limit, fn) {
 	const out = new Array(items.length);

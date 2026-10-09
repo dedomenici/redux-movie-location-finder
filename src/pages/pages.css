@@ -1,0 +1,3 @@
+/* The Pages build's Vite root is pages/, so point Tailwind's class scan at src/. */
+@import "../styles.css";
+@source "..";

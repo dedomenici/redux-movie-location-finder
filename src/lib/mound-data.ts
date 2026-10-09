@@ -1,3 +1,5 @@
+import { asset } from "@/lib/static-host";
+
 export type Act = {
   id: string;
   name: string;
@@ -39,7 +41,7 @@ export const ACTS: Act[] = [
     reviewUrl: "https://www.theskinny.co.uk/festivals/edinburgh-fringe/comedy/raj-poojara-pleasance-courtyard",
     listingUrl: "https://www.edfringe.com/tickets/whats-on/raj-poojara-dice",
     line: "The Skinny said the jokes were familiar and you lost the room. The Standard said the Ugandan-Indian home stories were yours, not the well-trodden ones, and that the crowd-work line was the best off the cuff at the Fringe. I was in Bunker Three. What are you drinking?",
-    portrait: "/mound/2026/raj.jpg",
+    portrait: asset("/mound/2026/raj.jpg"),
   },
   {
     id: "freya",
@@ -59,7 +61,7 @@ export const ACTS: Act[] = [
     reviewUrl: "https://www.theskinny.co.uk/festivals/edinburgh-fringe/comedy/freya-parker-underbelly-bristo-square",
     listingUrl: "https://www.edfringe.com/tickets/whats-on/freya-parker-an-hour-of-decay",
     line: "They said the thoughts were smarter than the jokes. The Visibly Over 25 bit is the joke, and it landed. Stay. I'll get this.",
-    portrait: "/mound/2026/freya.jpg",
+    portrait: asset("/mound/2026/freya.jpg"),
   },
   {
     id: "abbie",
@@ -79,7 +81,7 @@ export const ACTS: Act[] = [
     reviewUrl: "https://www.theskinny.co.uk/festivals/edinburgh-fringe/comedy/abbie-edwards-just-the-tonic-at-the-mash-house",
     listingUrl: "https://www.edfringe.com/tickets/whats-on/abbie-edwards-knee-touch",
     line: "The Skinny wanted you to stay on the crush and drop the monologues. Setting them up with someone else is the hour I came for. Drink?",
-    portrait: "/mound/2026/abbie.jpg",
+    portrait: asset("/mound/2026/abbie.jpg"),
   },
   {
     id: "bella",
@@ -99,7 +101,7 @@ export const ACTS: Act[] = [
     reviewUrl: "https://www.theskinny.co.uk/festivals/edinburgh-fringe/comedy/bella-hull-monkey-barrel-2026",
     listingUrl: "https://www.edfringe.com/tickets/whats-on/bella-hull-mad-cow-disease",
     line: "They said it peaked in the first ten minutes. Chortle wouldn't spoil that opening, which is the point. The dating-app bit and the ant-infested flat are why the rest isn't a comedown. I knew. What are you having?",
-    portrait: "/mound/2026/bella.jpg",
+    portrait: asset("/mound/2026/bella.jpg"),
   },
   {
     id: "card",
@@ -119,7 +121,7 @@ export const ACTS: Act[] = [
     reviewUrl: "https://www.theskinny.co.uk/festivals/edinburgh-fringe/comedy/the-passion-of-mr-cardboard-underbelly-george-square",
     listingUrl: "https://www.edfringe.com/tickets/whats-on/the-passion-of-mr-cardboard",
     line: "They said the clown and the story didn't marry, and the ending was anticlimactic. I stayed for Mr Cardboard, not a bigger finish. I'll buy.",
-    portrait: "/mound/2026/card.jpg",
+    portrait: asset("/mound/2026/card.jpg"),
   },
   {
     id: "plot",
@@ -139,7 +141,7 @@ export const ACTS: Act[] = [
     reviewUrl: "https://www.theskinny.co.uk/festivals/edinburgh-fringe/theatre/the-plot-summerhall",
     listingUrl: "https://www.edfringe.com/tickets/whats-on/the-plot",
     line: "The Skinny said the ending didn't connect. The Guardian wanted last year's lightness and called the text a history lesson. You two, in doublet and hose, in the middle of that floor, were the plot. Come to the Dick. I'm buying.",
-    portrait: "/mound/2026/plot.jpg",
+    portrait: asset("/mound/2026/plot.jpg"),
   },
   {
     id: "chris",
@@ -159,7 +161,7 @@ export const ACTS: Act[] = [
     reviewUrl: "https://www.theskinny.co.uk/festivals/edinburgh-fringe/comedy/christopher-hall-gilded-balloon-teviot",
     listingUrl: "https://www.edfringe.com/tickets/whats-on/christopher-hall-pizazz",
     line: "They said there was too much in the hour. EdFestMag called it brilliantly relatable and Broadway Baby gave it five. That's the pizazz. Don't go home. First round is mine.",
-    portrait: "/mound/2026/chris.jpg",
+    portrait: asset("/mound/2026/chris.jpg"),
   },
   {
     id: "ifrah",
@@ -179,7 +181,7 @@ export const ACTS: Act[] = [
     reviewUrl: "https://www.theskinny.co.uk/festivals/edinburgh-fringe/comedy/ifrah-qureshi-the-stand-2026",
     listingUrl: "https://www.edfringe.com/tickets/whats-on/ifrah-qureshi-48-flaws-of-power",
     line: "They wanted it stripped back so the laughs could flow. Edinburgh Reviews said the family power stuff is the show. The argument with your mum doesn't need less of you in it. I'm at the Stand bar.",
-    portrait: "/mound/2026/ifrah.jpg",
+    portrait: asset("/mound/2026/ifrah.jpg"),
   },
   {
     id: "otto",
@@ -199,7 +201,7 @@ export const ACTS: Act[] = [
     reviewUrl: "https://www.theskinny.co.uk/festivals/edinburgh-fringe/comedy/otto-astrid-assembly-roxy",
     listingUrl: "https://www.edfringe.com/tickets/whats-on/otto-astrid-the-stages-tour",
     line: "They called the lyrics repetitive and the jokes old hat. The Scotsman had a righteous time, and the room left in kitten jumpers. I Want To Be Your Kitten still counts. Drink?",
-    portrait: "/mound/2026/otto.jpg",
+    portrait: asset("/mound/2026/otto.jpg"),
   },
 ];
 

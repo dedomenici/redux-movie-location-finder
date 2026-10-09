@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { ACTS, sortActs, sortByStart, type Act } from "@/lib/mound-data";
 import { MOUND, WALKS } from "@/lib/mound-walks";
+import { asset } from "@/lib/static-host";
 
 function londonClock() {
   const parts = new Intl.DateTimeFormat("en-GB", {
@@ -158,7 +159,7 @@ export function MoundApp() {
   if (!started) {
     return (
       <div className="mound mound-launch">
-        <img src="/mound/hill.jpg" alt="The Mound in Edinburgh at night, rain on the cobbles, a couple walking toward the lit hill." />
+        <img src={asset("/mound/hill.jpg")} alt="The Mound in Edinburgh at night, rain on the cobbles, a couple walking toward the lit hill." />
         <div className="mound-launch-copy">
           <p className="mound-kicker">Edinburgh Fringe 2026</p>
           <h1 className="display mound-title">The Mound</h1>

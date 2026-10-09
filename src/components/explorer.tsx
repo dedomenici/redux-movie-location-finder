@@ -4,6 +4,7 @@ import { ExternalLink, MapPin, Search } from "lucide-react";
 import { freshPicks, loadFilm, placePhotos, sceneFrames, streetView, suggestMovies, filmPosters } from "@/lib/film.functions";
 import { GOOD_FAVES, shuffleNine } from "@/lib/good-faves";
 import type { Dossier, FilmLocation, PlacePhoto, Still, StreetViewHit, Suggestion } from "@/lib/film-types";
+import { asset, panoUrl, tileUrl } from "@/lib/static-host";
 
 let sharedAudio: AudioContext | null = null;
 
@@ -34,68 +35,68 @@ function blip(freq: number, ms = 60, type: OscillatorType = "square", level = 0.
 
 const REEL: { src: string; caption: string; href: string; pos?: string }[] = [
   {
-    src: "/reel/atonement-run.jpg",
+    src: asset("/reel/atonement-run.jpg"),
     caption: "Atonement: Redux — the beach at Redcar",
     href: "https://thereduxproject.com/atonement",
   },
   {
-    src: "/reel/get-carter-slate.jpg",
+    src: asset("/reel/get-carter-slate.jpg"),
     caption: "Get Carter: Redux — slate on the steps",
     href: "https://thereduxproject.com/getcarter",
   },
   {
-    src: "/reel/get-carter-bridge.jpg",
+    src: asset("/reel/get-carter-bridge.jpg"),
     caption: "Get Carter: Redux by the Tyne Bridge",
     href: "https://thereduxproject.com/getcarter",
   },
   {
-    src: "/reel/get-carter-steps.jpg",
+    src: asset("/reel/get-carter-steps.jpg"),
     caption: "Get Carter: Redux — down the stone steps",
     href: "https://thereduxproject.com/getcarter",
   },
   {
-    src: "/reel/ddlj-escalator.jpg",
+    src: asset("/reel/ddlj-escalator.jpg"),
     caption: "DDLJ: Redux on the station escalator",
     href: "https://thereduxproject.com/ddlj",
   },
   {
-    src: "/reel/last-christmas-strand.jpg",
+    src: asset("/reel/last-christmas-strand.jpg"),
     caption: "Last Christmas: Redux outside the Strand Palace",
     href: "https://thereduxproject.com/lastchristmas",
   },
   {
-    src: "/reel/last-chance-harvey.jpg",
+    src: asset("/reel/last-chance-harvey.jpg"),
     caption: "Last Chance Harvey: Redux, London",
     href: "https://thereduxproject.com/lastchanceharvey",
     pos: "object-[center_18%]",
   },
   {
-    src: "/reel/all-of-us-strangers.jpg",
+    src: asset("/reel/all-of-us-strangers.jpg"),
     caption: "All of Us Strangers: Redux crew",
     href: "https://thereduxproject.com/allofusstrangers",
   },
   {
-    src: "/reel/clockwork-orange.jpg",
+    src: asset("/reel/clockwork-orange.jpg"),
     caption: "A Clockwork Orange: Redux",
     href: "https://thereduxproject.com/clockworkorange",
   },
   {
-    src: "/reel/doctor-who.jpg",
+    src: asset("/reel/doctor-who.jpg"),
     caption: "Doctor Who: Redux",
     href: "https://thereduxproject.com/doctorwho",
   },
   {
-    src: "/reel/withnail.jpg",
+    src: asset("/reel/withnail.jpg"),
     caption: "Withnail & I: Redux",
     href: "https://thereduxproject.com/withnail",
   },
   {
-    src: "/reel/american-assassin.jpg",
+    src: asset("/reel/american-assassin.jpg"),
     caption: "American Assassin: Redux",
     href: "https://thereduxproject.com/americanassassin",
   },
   {
-    src: "/reel/brighton-rock.jpg",
+    src: asset("/reel/brighton-rock.jpg"),
     caption: "Brighton Rock: Redux",
     href: "https://thereduxproject.com/brightonrock",
     pos: "object-[center_15%]",
@@ -422,8 +423,8 @@ export function Explorer({ initialFilm = "", picks = [] }: { initialFilm?: strin
     <div className="min-h-screen">
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 py-4 md:px-6">
-          <a href="/" className="flex flex-col items-center no-underline">
-            <img src="/redux-logo.jpg" alt="The Redux Project" className="h-16 w-auto sm:h-20 md:h-24" />
+          <a href={asset("/")} className="flex flex-col items-center no-underline">
+            <img src={asset("/redux-logo.jpg")} alt="The Redux Project" className="h-16 w-auto sm:h-20 md:h-24" />
             <span className="mt-1 font-display text-xl leading-none tracking-wide whitespace-nowrap text-fg md:text-3xl">
               Movie Location Finder
             </span>
@@ -984,7 +985,7 @@ function LocationMap({
                 className="pointer-events-none absolute"
                 referrerPolicy="no-referrer"
                 style={{ left: (tile.x - box.x0) * 256, top: (tile.y - box.y0) * 256 }}
-                src={`/api/tile?z=${zoom}&x=${tile.x}&y=${tile.y}&lyrs=${lyrs}`}
+                src={tileUrl(zoom, tile.x, tile.y, lyrs)}
               />
             ))}
           </div>
@@ -1009,7 +1010,7 @@ function LocationMap({
                 className="pointer-events-none absolute"
                 referrerPolicy="no-referrer"
                 style={{ left: (tile.x - allView.x0) * 256, top: (tile.y - allView.y0) * 256 }}
-                src={`/api/tile?z=${allView.zoom}&x=${tile.x}&y=${tile.y}&lyrs=${lyrs}`}
+                src={tileUrl(allView.zoom, tile.x, tile.y, lyrs)}
               />
             ))}
           </div>
@@ -1260,7 +1261,7 @@ function PosterStrip({
 function panoSrc(id: string, yaw: number, pitch: number, fov: number) {
   const heading = Math.round(((yaw % 360) + 360) % 360);
   const zoom = Math.round(Math.max(20, Math.min(110, fov)));
-  return `/api/pano?id=${encodeURIComponent(id)}&yaw=${heading}&pitch=${pitch}&fov=${zoom}`;
+  return panoUrl(id, heading, pitch, zoom);
 }
 
 type SweepFrame = { yaw: number; pitch: number; fov: number; status: string };

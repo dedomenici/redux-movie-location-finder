@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { geocodePlace, nearbyFilms } from "@/lib/film.functions";
 import type { NearbySpot } from "@/lib/film-types";
+import { asset, tileUrl } from "@/lib/static-host";
 
 export const Route = createFileRoute("/near")({
   component: NearPage,
@@ -126,8 +127,8 @@ function NearPage() {
     <div className="min-h-screen">
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 py-4 md:px-6">
-          <a href="/" className="flex flex-col items-center no-underline">
-            <img src="/redux-logo.jpg" alt="The Redux Project" className="h-16 w-auto sm:h-20 md:h-24" />
+          <a href={asset("/")} className="flex flex-col items-center no-underline">
+            <img src={asset("/redux-logo.jpg")} alt="The Redux Project" className="h-16 w-auto sm:h-20 md:h-24" />
             <span className="mt-1 font-display text-xl leading-none tracking-wide whitespace-nowrap text-fg md:text-3xl">
               Movie Location Finder
             </span>
@@ -444,7 +445,7 @@ function NearbyMap({
             draggable={false}
             className="pointer-events-none absolute"
             style={{ left: (tile.x - view.x0) * 256, top: (tile.y - view.y0) * 256 }}
-            src={`/api/tile?z=${view.zoom}&x=${tile.x}&y=${tile.y}`}
+            src={tileUrl(view.zoom, tile.x, tile.y)}
           />
         ))}
       </div>

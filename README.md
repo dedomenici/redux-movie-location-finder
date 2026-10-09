@@ -2,7 +2,11 @@
 
 Search an IMDb title, scan the street where it was filmed, and compare a still with the real place.
 
-The finder lives in this app at `/locations`. The homepage is Richard DeDomenici’s site.
+Live on GitHub Pages: https://dedomenici.github.io/redux-movie-location-finder/
+
+- `/` and `/locations`: the finder
+- `/near`: movie locations near you (or near a place you type)
+- `/themound`: The Mound
 
 ## Run it
 
@@ -11,14 +15,22 @@ npm install
 npm run dev
 ```
 
-Then open the local site and go to `/locations`.
+Then open the local site.
 
-Search, Street View, posters, and location photos are loaded by server functions. They call IMDb, Wikidata, Wikipedia, Wikimedia, and Google’s panorama endpoint from the server, because those services do not allow a browser on GitHub Pages to call them directly.
+## Two builds
 
-## GitHub Pages
+- `npm run build` builds the full app (TanStack Start with a Node server, deployed to Vercel). Search, Street View, posters, and location photos are loaded by server functions in `src/lib/film.functions.ts`.
+- `npm run build:pages` builds a static copy into `dist-pages/` for GitHub Pages (`vite.pages.config.ts`). The same routes and components run as a single-page app, and the same `film.functions.ts` handlers run in the browser. `.github/workflows/pages.yml` builds and deploys it on every push to `main`.
 
-GitHub Pages only serves static files. It cannot run this app’s server, so the Pages site is a short note, not the working finder. The working app needs Node (this repo’s `npm run dev`, or a host such as Vercel).
+In the static build, sources that send CORS headers are called straight from the browser: the moviescenemap.com location atlas, Wikipedia, Wikidata, Wikimedia Commons, Openverse, OpenStreetMap Nominatim, and Open-Meteo geocoding. IMDb search uses IMDb's JSONP suggestion feed, and map tiles load directly from Google.
 
-Pages address, once the Actions workflow has run: https://dedomenici.github.io/redux-movie-location-finder/
+Sites that block browser requests from other origins can only be read by the server, so the Pages build does without them:
 
-In the repository settings, set Pages → Build and deployment → Source to **GitHub Actions** if it is not already.
+- extra pins from MovieMaps, The Worldwide Guide to Movie Locations, and ReelStreets
+- foreign posters from CineMaterial and photos from Movie Location Hunter
+- the live Letterboxd faves list (the built-in list of picks is used instead)
+- the quotes on moviescenemap.com location pages (`/near` uses the atlas API for films and photos instead)
+
+Google's Street View lookup (`GeoPhotoService.SingleImageSearch`) has been turned off by Google, so neither build finds panoramas at the moment. Both show "No Street View panorama" and link out to Google Maps.
+
+Deep links work on Pages because every route has its own `index.html`, and `404.html` is the same app shell as a fallback.
