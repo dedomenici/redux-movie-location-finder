@@ -250,7 +250,16 @@ function NearPage() {
                           )}
                           <span className="min-w-0 flex-1">
                             <span className={"block text-sm " + (on ? "text-accent" : "")}>{spot.name}</span>
-                            {spot.credits && <span className="mt-0.5 block text-xs text-pretty">{spot.credits}</span>}
+                            {spot.credits ? (
+                              <span className="mt-0.5 block text-xs text-pretty">
+                                <span className="text-muted">Filmed here: </span>
+                                {spot.credits}
+                              </span>
+                            ) : (
+                              <span className="mt-0.5 block text-xs text-pretty text-muted">
+                                No film titles on record for this place yet.
+                              </span>
+                            )}
                             {spot.scene && <span className="mt-0.5 block text-xs text-pretty text-muted">{spot.scene}</span>}
                           </span>
                           <span className="shrink-0 text-xs text-muted">{milesAway(spot.distanceKm)}</span>
@@ -260,7 +269,7 @@ function NearPage() {
                             <a
                               key={film}
                               className="text-fg underline decoration-line underline-offset-4"
-                              href={`/?film=${encodeURIComponent(film)}`}
+                              href={`${asset("/")}?film=${encodeURIComponent(film)}`}
                             >
                               {film}
                             </a>
