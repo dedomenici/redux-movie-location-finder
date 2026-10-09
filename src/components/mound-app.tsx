@@ -73,6 +73,8 @@ function buildDeck(now: number): Card[] {
   return [...tonight, ...tomorrow];
 }
 
+const TAGLINE = "A dating app for the edfringe shame spiral.";
+
 const SHOUTS = {
   right: ["BRAVO!", "BRAVO!", "BRAVO!"],
   left: ["BOOO!", "BOOO!", "BOOO!"],
@@ -159,13 +161,44 @@ export function MoundApp() {
   if (!started) {
     return (
       <div className="mound mound-launch">
-        <img src={asset("/mound/hill.jpg")} alt="The Mound in Edinburgh at night, rain on the cobbles, a couple walking toward the lit hill." />
-        <div className="mound-launch-copy">
+        <header className="mound-launch-head">
           <p className="mound-kicker">Edinburgh Fringe 2026</p>
           <h1 className="display mound-title">The Mound</h1>
-          <button type="button" className="solid" onClick={() => setStarted(true)}>
-            Start the night
-          </button>
+          <p className="mound-tagline">{TAGLINE}</p>
+        </header>
+        <img src={asset("/mound/hill.jpg")} alt="The Mound in Edinburgh at night, rain on the cobbles, a couple walking toward the lit hill." />
+        <div className="mound-launch-copy">
+          <p>
+            Nine real acts from the 2026 EdFringe listings, every one of them given two or three stars by The Skinny.
+            Somebody should buy them a drink. It could be you.
+          </p>
+          <p>
+            <strong>Tonight.</strong> One card at a time, by the Edinburgh clock: whoever comes off stage soonest goes
+            first, and if two finish together, whoever is the shorter walk from the top of the Mound. When tonight runs
+            out it lines up tomorrow by start time, then goes round again.
+          </p>
+          <p>
+            <strong>Each card.</strong> The show, the venue and the bar to find them in afterwards, an age (with where it
+            came from, or an honest &ldquo;estimated&rdquo;), the stars, the knock from the review, and a line to open
+            with. There&rsquo;s a map of the walk from the top of the Mound, and links to the listing, the review and
+            their Instagram.
+          </p>
+          <p>
+            <strong>Swipe.</strong> Right and the hill shouts bravo. Left and it boos. Turn the sound up.
+          </p>
+          <p>
+            <strong>Bravos.</strong> Everyone you swipe right on is kept in Bravos, on this device only, so you can find
+            them again before last orders.
+          </p>
+          <p className="mound-note">
+            The reviews are real and published. The bars are the venue bars. An age marked estimated is a guess, not a
+            fact.
+          </p>
+          <div className="mound-launch-go">
+            <button type="button" className="solid" onClick={() => setStarted(true)}>
+              Start the night
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -177,6 +210,20 @@ export function MoundApp() {
         <div>
           <p className="mound-kicker">Edinburgh Fringe 2026</p>
           <h1 className="display mound-title">The Mound</h1>
+          <p className="mound-tagline">
+            {TAGLINE}{" "}
+            <button
+              type="button"
+              className="mound-more"
+              aria-pressed={view === "about"}
+              onClick={() => {
+                setProfile(null);
+                setView("about");
+              }}
+            >
+              More
+            </button>
+          </p>
         </div>
         <nav className="mound-nav">
           <button type="button" className={view === "deck" && !profile ? "on" : ""} onClick={() => { setProfile(null); setView("deck"); }}>
@@ -185,14 +232,14 @@ export function MoundApp() {
           <button type="button" className={view === "bravos" ? "on" : ""} onClick={() => { setProfile(null); setView("bravos"); }}>
             Bravos{bravos.length ? ` ${bravos.length}` : ""}
           </button>
-          <button type="button" className={view === "about" ? "on" : ""} onClick={() => { setProfile(null); setView("about"); }}>
-            Why
-          </button>
         </nav>
       </header>
 
       {view === "about" && (
         <section className="mound-panel">
+          <button type="button" className="mound-back" onClick={() => setView("deck")}>
+            Back to tonight
+          </button>
           <p className="display mound-lead">A dating app for the shame spiral.</p>
           <p>
             These are real shows from the 2026 EdFringe listings. The knock is a published review in The Skinny. Swipe
