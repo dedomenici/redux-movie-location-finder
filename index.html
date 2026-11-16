@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Redirecting to The Redux Project</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href="https://dedomenici.github.io/redux/" />
+    <meta http-equiv="refresh" content="0; url=https://dedomenici.github.io/redux/" />
+    <script>
+      (function () {
+        var prefix = "/redux-movie-location-finder";
+        var path = location.pathname || "/";
+        var rest = path;
+        if (path === prefix || path.indexOf(prefix + "/") === 0) {
+          rest = path.slice(prefix.length);
+        }
+        if (rest.charAt(0) === "/") rest = rest.slice(1);
+        var target = "https://dedomenici.github.io/redux/" + rest + location.search + location.hash;
+        var meta = document.querySelector('meta[http-equiv="refresh"]');
+        if (meta) meta.setAttribute("content", "0; url=" + target);
+        var canonical = document.querySelector('link[rel="canonical"]');
+        if (canonical) canonical.setAttribute("href", target);
+        var anchor = document.getElementById("destination");
+        if (anchor) {
+          anchor.setAttribute("href", target);
+          anchor.textContent = target;
+        }
+        location.replace(target);
+      })();
+    </script>
+  </head>
+  <body>
+    <p>This site has moved to <a id="destination" href="https://dedomenici.github.io/redux/">https://dedomenici.github.io/redux/</a>.</p>
+  </body>
+</html>
