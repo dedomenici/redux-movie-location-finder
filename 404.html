@@ -16,7 +16,17 @@
           rest = path.slice(prefix.length);
         }
         if (rest.charAt(0) === "/") rest = rest.slice(1);
-        var target = "https://dedomenici.github.io/redux/" + rest + location.search + location.hash;
+        var target;
+        if (rest === "themound" || rest === "mound") {
+          target = "https://dedomenici.github.io/themound/";
+        } else if (rest.indexOf("themound/") === 0) {
+          target = "https://dedomenici.github.io/themound/" + rest.slice("themound/".length);
+        } else if (rest.indexOf("mound/") === 0) {
+          target = "https://dedomenici.github.io/themound/" + rest.slice("mound/".length);
+        } else {
+          target = "https://dedomenici.github.io/redux/" + rest;
+        }
+        target += location.search + location.hash;
         var meta = document.querySelector('meta[http-equiv="refresh"]');
         if (meta) meta.setAttribute("content", "0; url=" + target);
         var canonical = document.querySelector('link[rel="canonical"]');
